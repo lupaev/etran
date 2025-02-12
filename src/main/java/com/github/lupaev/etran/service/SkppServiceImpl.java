@@ -63,7 +63,7 @@ public class SkppServiceImpl implements SkppService {
 				Object rootElement = executeRequestAndGetResponse(skppMapper.toSetSkpp(skpp), skpp);
 				processResponseSetSKPPReply(rootElement, skpp);
 			} catch (Exception e) {
-				log.error("Ошибка при обработке SetBlock для Skpp с ID {}: {}", skpp.getId(), e.getMessage(), e);
+				log.error("Ошибка при обработке SetBlock для Skpp с ID {}: {}", skpp.getId(), e.getMessage());
 			}
 		}
 		skppRepository.saveAll(skpps);
@@ -84,7 +84,7 @@ public class SkppServiceImpl implements SkppService {
 				Object rootElement = executeRequestAndGetResponse(skppMapper.toGetSkpp(skpp), skpp);
 				processResponseGetSKPPReply(rootElement, skpp);
 			} catch (Exception e) {
-				log.error("Ошибка при обработке GetBlock для Skpp с ID {}: {}", skpp.getId(), e.getMessage(), e);
+				log.error("Ошибка при обработке GetBlock для Skpp с ID {}: {}", skpp.getId(), e.getMessage());
 			}
 		}
 		skppRepository.saveAll(skpps);
