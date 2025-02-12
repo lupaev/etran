@@ -1,0 +1,965 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns:ecat="http://intellex.ru/Etran/ASUASU/Categories">
+    <xs:import namespace="http://intellex.ru/Etran/ASUASU/Categories"
+        schemaLocation="EtranCategories.xsd"/>
+    <xs:include schemaLocation="EtranCommonMessages.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>Сообщения информационного обмена АС Этран - внешнее АСУ. 
+Суточный клиентский план погрузки</xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="GetSKPP">
+        <xs:annotation>
+            <xs:documentation>Запрос Суточного клиентского плана погрузки</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ReportDate" type="ecat:DateType" minOccurs="0"
+                    maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Отчётная дата</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента. Значения по умолчанию - ИД организации пользователя, выполняющго запрос.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="GetClaimList" type="ecat:CheckType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Флаг запроса списка действующих невыполненных заявок ГУ-12 Клиента.
+При указании флага в ответе будет возвращён только список данных ГУ-12 в формате GetSKPPReply (БЕЗ передачи данных самого СКПП, факта выполнения, причин согласования и несогласования и т.д.)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="useMod11" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Получение 6-значных кодов в ответе</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="RW_OTP_CODE" type="ecat:String5Type">
+                    <xs:annotation>
+                        <xs:documentation>Код дороги (RW_CODE по НСИ RAILWAY). возвращать информацию только со строками СКПП с данной дорогой отправления.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:choice minOccurs="0">
+                    <xs:sequence minOccurs="0">
+                        <xs:element minOccurs="0" name="useTenantCar">
+                            <xs:annotation>
+                                <xs:documentation>Получать данные как собственник вагона. При указании параметра будут  сформированы данные по СКПП, где организация указана в качестве "собственника вагона"</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element minOccurs="0" name="SenderID" type="ecat:IDShortPosType">
+                            <xs:annotation>
+                                <xs:documentation>Идентификатор организации грузоотправителя. Выдать только строки по конкретному грузоотправителю (указывать только при запросе строк владельцем вагонов). Без указания параметра выдаются строки сразу по всем грузоотправителям , где организация Клиента - владелец вагонов.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:element minOccurs="0" name="useRecip">
+                        <xs:annotation>
+                            <xs:documentation>При указании флага будут сформированы данные по СКПП, где организация указана в качестве грузополучателя</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+                <xs:element minOccurs="0" name="usePayer">
+                    <xs:annotation>
+                        <xs:documentation>Флаг получения строк СКПП плательщиком . При указании флага в запросе , будут выданы строки СКПП , где указана заявка ГУ-12 в которой организация пользователя является плательщиком</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="SetSKPP">
+        <xs:annotation>
+            <xs:documentation>Передача Суточного клиентского плана погрузки</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ReportDate" type="ecat:DateType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Отчётная дата</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ReportDateEnd" type="ecat:DateType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Дата окончания периода заполнения СКПП по графику подач. Начало периода заполнения – дата из поля ReportDate «Отчётная дата». Требуется заполнение, если необходимо заполнить СКПП по графику подач на период. Поле заполняется при указании флага расчета по графику подач autocalc_flag = 1</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента. Значения по умолчанию - ИД организации пользователя, выполняющго запрос.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="RowSet"/>
+                <xs:element name="autocalc_flag" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Флаг автоматического расчёта по данным графика подачи.
+1 - выполнить расчёт
+0 - не выполнять.
+При указании значения 1 выполняется заполнение СКПП данными, рассчитанными в соответствии с ГУ-12, переданные значения в RowSet игнорируются.
+Значение по умолчанию - 0.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SetSKPPClaimChange">
+        <xs:annotation>
+            <xs:documentation>Запрос изменения заявки ГУ-12 в строках СКПП грузоотправителем и организатором погрузки </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента. Значения по умолчанию - ИД организации пользователя, выполняющго запрос.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" name="Row">
+                    <xs:annotation>
+                        <xs:documentation>Строка для редактирования </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="clp_stngg_id" type="xs:int" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>Идентификатор редактируемой строки</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element maxOccurs="unbounded" name="RowClaim">
+                                <xs:annotation>
+                                    <xs:documentation>Строки по планируемым объемам и отправкам из ГУ-12</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="claim_id" type="xs:int" maxOccurs="1">
+                                            <xs:annotation>
+                                                <xs:documentation>Идентификатор ГУ-12</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
+                                        <xs:element name="claimOtpr" type="xs:int" maxOccurs="1">
+                                            <xs:annotation>
+                                                <xs:documentation>Номер отправки из ГУ-12</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
+                                        <xs:element name="plan_vag" type="xs:int" maxOccurs="1">
+                                            <xs:annotation>
+                                                <xs:documentation>Прогноз СКПП (вагоны)</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
+
+                                        <xs:element name="plan_tonn" type="xs:int" maxOccurs="1">
+                                            <xs:annotation>
+                                                <xs:documentation>Прогноз СКПП (тонн)</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SetSKPPClaimChangeReply">
+        <xs:annotation>
+            <xs:documentation>Ответ на запрос SetSKPPClaimChange</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" ref="ClientRow"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SKPPPortAgr">
+        <xs:annotation>
+            <xs:documentation>Согласование СКПП Портом</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ReportDate" type="ecat:DateType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Отчётная дата</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента. Значения по умолчанию - ИД организации пользователя, выполняющго запрос.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="RowSetPortAgr" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GetSKPPHist">
+        <xs:annotation>
+            <xs:documentation>Запрос истории ведения строки Суточного клиентского плана погрузки</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="RowHistReq"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SKPPRecipAgreement">
+        <xs:annotation>
+            <xs:documentation>Согласование СКПП грузополучателем</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ReportDate" type="ecat:DateType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Отчётная дата</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента. Значения по умолчанию - ИД организации пользователя, выполняющго запрос.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RowSetRecipAgr" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Строка СКПП для согласования грузополучателе</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="clp_stngg_id" type="xs:int" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>Идентификатор строки</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="COUNT" type="xs:int" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>Количество согласованных вагонов</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GetSKPPReply">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" ref="ClientRow"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="SetSKPPReply">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element name="ClOrgId" minOccurs="0" maxOccurs="1" type="xs:int">
+                            <xs:annotation>
+                                <xs:documentation>Идентификатор клиента.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="ReportDate" type="ecat:DateType" minOccurs="1"
+                            maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>Отчётная дата</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="Result" minOccurs="0" maxOccurs="1" type="xs:int">
+                            <xs:annotation>
+                                <xs:documentation>Результат обработки запроса. 1 - ОК</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element minOccurs="0" name="warning" type="ecat:LongStringType">
+                            <xs:annotation>
+                                <xs:documentation>Предупреждение</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SKPPPortAgrReply">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element name="Result" minOccurs="0" maxOccurs="1" type="xs:int">
+                            <xs:annotation>
+                                <xs:documentation>Результат обработки запроса. 1 - ОК</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GetSKPPHistReply">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" ref="RowHistResp"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SKPPRecipAgreementReply">
+        <xs:annotation>
+            <xs:documentation>Результат приема запроса Согласование СКПП грузополучателем SKPPRecipAgreement</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="SimpleAnswer">
+                    <xs:sequence>
+                        <xs:element name="Result" minOccurs="0" maxOccurs="1" type="xs:int">
+                            <xs:annotation>
+                                <xs:documentation>Результат обработки запроса. 1 - ОК</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ROW">
+        <xs:annotation>
+            <xs:documentation>Данные Суточного клиентского плана погрузки</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="NUMPP" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Порядковый номер строки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLP_STNGG_ID" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор строки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLAIM_ID" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLAIM_NUM" type="ecat:String20Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Номер ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="RW_OTP_CODE" type="ecat:TRailwayType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код дороги отправления</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RW_OTP_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование дороги отправления</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_OTP_CODE" type="ecat:TSimpleCodeMod11" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции отправления</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_OTP_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование станции отправления</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="FR_GROUP_NAME" type="ecat:String255Type" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование группы груза</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="FR_GG_NUMBER" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Группа груза (GG_NUMBER по НСИ SUM_FREIGHT)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="FR_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование груза</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="FR_CODE" type="ecat:ETSNGType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код груза ЕТСНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="STATE" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Состояние заявки ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="STATE_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Состояние заявки ГУ-12 - наименование</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RW_NAZN_CODE" type="ecat:TRailwayType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код дороги назначения/выхода из РФ (или СНГ)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RW_NAZN_NAME" type="ecat:String255Type" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование дороги назначения/выхода из РФ (или СНГ)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_NAZN_CODE" type="ecat:TSimpleCodeMod11" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции назначения РФ/выхода из РФ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_NAZN_SNG_NAME" type="ecat:String255Type" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование станции назначения СНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_NAZN_SNG_CODE" type="ecat:TSimpleCodeMod11" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции назначения СНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST_NAZN_NAME" type="ecat:String255Type" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование станции назначения РФ/выхода из РФ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="TS_ID" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>ИД паспорта (orgPassport) пункта перевалки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="TS_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование пункта перевалки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="PLAN_TONN" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (тонн)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="PLAN_VAG" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (вагоны)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLAIM_TONN" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Тонны по ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLAIM_VAG" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Вагоны по ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLAIM_OST" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Остаток вагонов по ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="POGR_TONN" type="xs:float" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Погружено фактически в отчётные сутки, тонн</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="POGR_VAG" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Погружено фактически в отчётные сутки, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RPS_NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование рода подвижного состава</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RPS_ID" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Род подвижного состава - ИД по НСИ KIND_CAR_SVOD</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="WAGOWNER_ID" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>ИД паспорта (orgPassport) собственника вагона</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="WAGOWNER_NAME" type="ecat:String255Type" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование собственника вагона</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="DELTA_VAG" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Отклонение факта к согласованному плану, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CLP_TYPE" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Вид сообщения. 
+1 - Прямое
+2 - Экспорт
+3 - Импорт</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="SOGL_VAG" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано СКПП, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="SOGL_VAG_PORT" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано портом, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="LIMSIGN" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Признак попадания под лимитирующее направление.
+1 - Да
+0 - Нет</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="HistSign" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Признак наличия истории у записи
+1 - Да
+0 - Нет</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" ref="REASON" maxOccurs="unbounded"/>
+                <xs:element maxOccurs="1" minOccurs="0" ref="AuxServ"/>
+                <xs:element minOccurs="0" name="transCntrNum" type="ecat:String100Type">
+                    <xs:annotation>
+                        <xs:documentation>Номер договора на организацию перевозок грузов по графику. Передается в случае указания по строке СКПП вида дополнительной услуги «КП» (контейнерный поезд) или «Д» (договорной поезд).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="RPS_CODE" type="ecat:IDShortPosType">
+                    <xs:annotation>
+                        <xs:documentation>Код рода подвижного состава, KOD_SVOD_RV по НСИ KIND_CAR_SVOD</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="SOGL_TONN" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано СКПП, тонн</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="RECIP_ORG_ID" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор паспорта грузополучателя (orgPassport)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="RECIP_OKPO" type="ecat:TStringOKPO">
+                    <xs:annotation>
+                        <xs:documentation>ОКПО грузополучателя</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="RECIP_NAME" type="ecat:String255Type">
+                    <xs:annotation>
+                        <xs:documentation>Наименование грузополучателя</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="PLAN_WAG_1824INTERV" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Количество вагонов, планируемое к погрузке с 18:00 до 24:00 мск времени, ваг</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="POGR_WAG_1824INTERV" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Погружено с 18:00 до 24:00 мск времени, ваг</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="POGR_TONN_1824INTERV" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Погружено с 18:00 до 24:00 мск времени, тонн</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="ReasonDMZI" type="ecat:LongStringType">
+                    <xs:annotation>
+                        <xs:documentation>Причина несогласования ДМ ЗИ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="SOGL_VAG_RECIPIENT" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано грузополучателем, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="PayerOrgID" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор паспорта плательщика (orgPassport)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="PayerOKPO" type="ecat:TStringOKPO">
+                    <xs:annotation>
+                        <xs:documentation>ОКПО плательщика</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="PayerName" type="ecat:String255Type">
+                    <xs:annotation>
+                        <xs:documentation>Наименование плательщика</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="TypeDelivs">
+                    <xs:annotation>
+                        <xs:documentation>Признаки назначения из заявки на грузоперевозку</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" name="TypeDeliv">
+                                <xs:annotation>
+                                    <xs:documentation>Признак назначения (SIGN_ID по НСИ DESTINATION_SIGN- )</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element minOccurs="0" name="ClmDateBegin" type="ecat:DateType">
+                    <xs:annotation>
+                        <xs:documentation>Дата начала действия ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="ClmDateEnd" type="ecat:DateType">
+                    <xs:annotation>
+                        <xs:documentation>Дата окончания действия ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="WagSoglBezTPlan" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано ДМ ЗИ (без учета тех.плана), вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="ReasonsBezTPlan" type="ecat:LongStringType">
+                    <xs:annotation>
+                        <xs:documentation>Причины несогласования ДМ ЗИ (без учета тех.плана)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ClientRow">
+        <xs:annotation>
+            <xs:documentation>Данные Суточного клиентского плана погрузки по организации</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ClOrgId" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор клиента.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgOKPO" type="ecat:TStringOKPO">
+                    <xs:annotation>
+                        <xs:documentation>ОКПО клиента.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ClOrgName" type="ecat:String255Type">
+                    <xs:annotation>
+                        <xs:documentation>Наименование клиента.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ReportDate" type="ecat:DateType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Отчётная дата</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="ROW" minOccurs="0" maxOccurs="unbounded"> </xs:element>
+                <xs:element name="Rights_Flag" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Признак возможности редактирования плана на момент запроса.
+1 - редактирование возможно
+0 - редактирование не возможно.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="REASON">
+        <xs:annotation>
+            <xs:documentation>Причины невыполнения СКПП</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ID" type="xs:int" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>ИД причины по НСИ clp_reason</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="CODE" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код причины по clp_reason</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="COUNT" type="xs:int" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Количество вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="NAME" type="ecat:String255Type" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Наименование причины</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="GROUP_REASON_ID" type="ecat:IDShortPosType">
+                    <xs:annotation>
+                        <xs:documentation>ИД группы ответственности</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" name="GROUP_REASON_NAME" type="ecat:String255Type">
+                    <xs:annotation>
+                        <xs:documentation>Наименование группы ответственности</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RowSet">
+        <xs:annotation>
+            <xs:documentation>Строка отправки для передачи СКПП</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Action" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Признак выполняемого действия со строкой СКПП. 
+1 - вставка новой строки
+2 - обновление строки (по clp_stngg_id)
+3 - удаление строки (по clp_stngg_id)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="clp_stngg_id" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор строки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="claim_id" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор ГУ-12</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="plan_tonn" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (тонн)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="plan_vag" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (вагоны)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" ref="REASON" maxOccurs="unbounded"/>
+                <xs:element name="rw_nazn_code" type="ecat:TRailwayType" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код дороги назначения/выхода из РФ (или СНГ).
+Для вида сообщение прямое и импорт - дорога назначения РФ
+Для вида сообщения экспорт - дорога выхода из РФ или СНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="st_otp_code" type="ecat:TSimpleCodeMod11" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции отправления</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="st_nazn_sng_code" type="ecat:TSimpleCodeMod11" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции назначения СНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="fr_gg_number" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Группа груза (GG_NUMBER по НСИ SUM_FREIGHT)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="fr_code" type="ecat:ETSNGType" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код груза ЕТСНГ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="st_nazn_code" type="ecat:TSimpleCodeMod11" minOccurs="0"
+                    maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Код станции назначения/выхода из РФ
+Для вида сообщение прямое - станция назначения
+Для вида сообщения экспорт - станция выхода из РФ</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ts_id" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>ИД паспорта (orgPassport) пункта перевалки
+Указывается в случае выхода из РФ через Порт</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="rps_id" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Род подвижного состава - ИД по НСИ KIND_CAR_SVOD</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="WagOwner_id" type="xs:int" maxOccurs="1" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>ИД паспорта (orgPassport) собственника вагона</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="clp_type" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Вид сообщения. 
+1 - Прямое
+2 - Экспорт
+3 - Импорт</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element maxOccurs="1" minOccurs="0" ref="AuxServ"/>
+                <xs:element name="transCntrNum" type="ecat:String100Type" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Номер договора на организацию перевозок грузов по графику. Передается в случае указания по строке СКПП вида дополнительной услуги «КП» (контейнерный поезд) или «Д» (договорной поезд).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="RecipOrgId" type="xs:int" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор паспорта грузополучателя (orgPassport)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:choice minOccurs="0">
+                    <xs:element minOccurs="0" name="ExtraNextDay" type="xs:int">
+                        <xs:annotation>
+                            <xs:documentation>Флаг согласия на автоматический перенос несогласованных ОАО «РЖД» объемов на следующие сутки
+1 - выполнить перенос
+0 - не выполнять перенос ( по умолчанию).
+При указании значения 1 выполняется автоматический перенос строки СКПП с несогласованными ОАО «РЖД» объемами на следующие сутки».</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="PLAN_WAG_1824INTERV" type="xs:int">
+                        <xs:annotation>
+                            <xs:documentation>Количество вагонов, планируемое к погрузке с 18:00 до 24:00 мск времени, ваг</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+                <xs:element name="PayerOrgID" type="xs:int" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор паспорта плательщика (orgPassport)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RowSetPortAgr">
+        <xs:annotation>
+            <xs:documentation>Строка СКПП для согласования портом</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="clp_stngg_id" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор строки</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="COUNT" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Количество согласованных вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RowHistReq">
+        <xs:annotation>
+            <xs:documentation>Строка запроса истории</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="clp_stngg_id" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор строки.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RowHistResp">
+        <xs:annotation>
+            <xs:documentation>Строка истории</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="clp_stngg_id" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Идентификатор строки.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="DtIns" type="ecat:DateTimeType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Дата редактирования</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="plan_tonn" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (тонн)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="plan_vag" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Прогноз СКПП (вагоны)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="sogl_vag" type="xs:int" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Согласовано СКПП, вагонов</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" ref="REASON" maxOccurs="unbounded"/>
+                <xs:element name="User" type="TOrgUser" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Пользователь, внёсший изменения</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element maxOccurs="1" minOccurs="0" ref="AuxServ"/>
+                <xs:element name="transCntrNum" type="ecat:String100Type" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Номер договора на организацию перевозок грузов по графику. Передается в случае указания по строке СКПП вида дополнительной услуги «КП» (контейнерный поезд) или «Д» (договорной поезд).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AuxServ">
+        <xs:annotation>
+            <xs:documentation>Доп. услуга</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Aux_ID" type="xs:int" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>ИД услуги по НСИ AUX_SERVICES</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="Name" type="ecat:String255Type" maxOccurs="1" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Наименование</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
