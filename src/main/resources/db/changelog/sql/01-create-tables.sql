@@ -3,18 +3,18 @@
 -- changeset sergej:1
 create table SKPP
 (
-    ID           bigserial                    not null
+    ID           bigserial                      not null
         constraint SKPP_PK
             primary key,
-    CL_ORG_ID    INTEGER                    not null,
-    REPORT_DATE  DATE                      not null,
-    ST_OTPR_CODE VARCHAR(6)               not null,
+    CL_ORG_ID    INTEGER                        not null,
+    REPORT_DATE  DATE                           not null,
+    ST_OTPR_CODE VARCHAR(6)                     not null,
     DATE_SENT    DATE,
     DATE_ACCEPT  DATE,
     CREATE_DATE  DATE      default CURRENT_DATE not null,
     UPDATE_DATE  DATE      default CURRENT_DATE not null,
-    EXT_ID       INTEGER                    not null,
-    IS_RUN       int default 0       not null,
+    EXT_ID       INTEGER                        not null,
+    IS_RUN       int default 0                  not null,
     RESP_TEXT    VARCHAR(4000)
 );
 
@@ -76,7 +76,7 @@ create table SKPP_STRS
     REASON_DMZI          VARCHAR(3000),
     CREATE_DATE          DATE default CURRENT_DATE not null,
     UPDATE_DATE          DATE default CURRENT_DATE not null,
-    EXT_ID               INTEGER               not null,
+    EXT_ID               INTEGER                   not null,
     TS_ID                INTEGER,
     CLAIM_NUM            INTEGER,
     STATE                VARCHAR(20),
@@ -191,10 +191,10 @@ create table XML_QUERY_LOG
     ID           BIGSERIAL                    not null
         constraint XML_QUERY_LOG_PK
             primary key,
-    OBJECT_TYPE  VARCHAR(100)                not null,
+    OBJECT_TYPE  VARCHAR(100)                 not null,
     OBJECT_ID    INTEGER                      not null,
-    CREATE_DATE  DATE default CURRENT_DATE   not null,
-    UPDATE_DATE  DATE default CURRENT_DATE   not null,
+    CREATE_DATE  DATE default CURRENT_DATE    not null,
+    UPDATE_DATE  DATE default CURRENT_DATE    not null,
     XML_REQUEST  TEXT,
     XML_RESPONSE TEXT
 );
